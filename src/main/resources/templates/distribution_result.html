@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head_fragment.html :: head(title='Расчет распределения', description='Форма для ввода значений распределения')}">
+</head>
+
+<body class="container">
+
+<main>
+    <h1>Расчет распределения электронов</h1>
+
+    <h2>Параметры расчета</h2>
+
+    <form action="#">
+
+        <div class="form-group">
+            <label for="tension-input">Напряженность поля</label>
+            <input value="300" min="300" max="3000" name="tension" step=any type="number" class="form-control"
+                   th:value="${distributionForm.tension}" id="tension-input" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="generatorFrequency-input">Частота генератора</label>
+            <input value="11.058406140636071" name="generatorFrequency" step=any type="number" class="form-control"
+                   th:value="${distributionForm.generatorFrequency}" id="generatorFrequency-input" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="collisionFrequency-input">Частота соударений</label>
+            <input value="1000000000" name="collisionFrequency" step=any type="number" class="form-control"
+                   th:value="${distributionForm.collisionFrequency}" id="collisionFrequency-input" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="maxVelocity-input">Максимальная скорость в м/с</label>
+            <input name="maxVelocity" step=any type="number" class="form-control" id="maxVelocity-input"
+                   th:value="${distributionForm.maxVelocity}" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="numBins-input">Количество интервалов скоростей</label>
+            <input name="numBins" type="number" class="form-control" id="numBins-input"
+                   th:value="${distributionForm.numBins}" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="radius-input">Радиус разрядной камеры</label>
+            <input name="radius" type="number" class="form-control" id="radius-input"
+                   th:value="${distributionForm.radius}" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="radiusBins-input">Количество интервалов радиуса</label>
+            <input name="radiusBins" type="number" class="form-control" id="radiusBins-input"
+                   th:value="${distributionForm.radiusBins}" readonly>
+        </div>
+
+    </form>
+    <hr class="my-4">
+
+    <a class="btn btn-primary btn-lg" th:href="@{/}">Перерассчитать</a>
+
+    <hr class="my-4">
+
+    <h2>Распределение электронов</h2>
+
+    <div id="speeds" hidden th:text="${maxwellDist.speeds}"></div>
+    <div id="distMaxwell" hidden th:text="${maxwellDist.distribution}"></div>
+    <div id="distGinzburg" hidden th:text="${ginzburgDist.distribution}"></div>
+
+    <div>
+        <canvas id="distChart"></canvas>
+    </div>
+
+    <hr class="my-4">
+
+    <h2>Концентрация электронов</h2>
+
+    <div id="radiuces" hidden th:text="${maxwellDist.radiuces}"></div>
+    <div id="concMaxwell" hidden th:text="${maxwellDist.concentration}"></div>
+    <div id="concGinzburg" hidden th:text="${ginzburgDist.concentration}"></div>
+
+    <div>
+        <canvas id="concChart"></canvas>
+    </div>
+
+    <hr class="my-4">
+
+    <h2>Таблица распределение электронов</h2>
+
+    <table id="distTable" class="table">
+
+        <thead>
+        <tr>
+            <th scope="col">Скорости</th>
+            <th scope="col">по Максвелл-Больцману</th>
+            <th scope="col">по Гинзбургу</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="dist, iterStat: ${maxwellDist.speeds}">
+            <th th:text="${dist}"></th>
+            <td th:text="${maxwellDist.distribution[__${iterStat.index}__]}">Mark</td>
+            <td th:text="${ginzburgDist.distribution[__${iterStat.index}__]}">Otto</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr class="my-4">
+
+    <h2>Таблица концентрации электронов</h2>
+
+    <table id="concTable" class="table">
+
+        <thead>
+        <tr>
+            <th scope="col">Радиус</th>
+            <th scope="col">по Максвелл-Больцману</th>
+            <th scope="col">по Гинзбургу</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="conc, iterStat: ${maxwellDist.radiuces}">
+            <th th:text="${conc}"></th>
+            <td th:text="${maxwellDist.concentration[__${iterStat.index}__]}">Mark</td>
+            <td th:text="${ginzburgDist.concentration[__${iterStat.index}__]}">Otto</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx1 = document.getElementById('distChart');
+
+        const labels1 = getDistLabels()
+        const data1 = {
+            labels: labels1,
+            datasets: [
+                {
+                    label: 'Распределение по Максвеллу',
+                    data: getDistMaxwell(),
+                    fill: false,
+                    borderColor: 'rgb(255, 0, 0)',
+                    tension: 0.000001
+                },
+                {
+                    label: 'Распределение Гинзбургу',
+                    data: getDistGinzburg(),
+                    fill: false,
+                    borderColor: 'rgb(255, 254, 0)',
+                    tension: 0.000001
+                }]
+        };
+
+        new Chart(ctx1, {
+                type: 'line',
+                data: data1
+            }
+        );
+    </script>
+    <script>
+        const ctx2 = document.getElementById('concChart');
+
+        const labels2 = getConcLabels()
+        const data2 = {
+            labels: labels2,
+            datasets: [
+                {
+                    label: 'Концентрация по Максвеллу',
+                    data: getConcMaxwell(),
+                    fill: false,
+                    borderColor: 'rgb(255, 0, 0)',
+                    tension: 0.000001
+                },
+                {
+                    label: 'Концентрация по Гинзбургу',
+                    data: getConcGinzburg(),
+                    fill: false,
+                    borderColor: 'rgb(255, 254, 0)',
+                    tension: 0.000001
+                }]
+        };
+
+        new Chart(ctx2, {
+                type: 'line',
+                data: data2
+            }
+        );
+    </script>
+</main>
+</body>
+</html>

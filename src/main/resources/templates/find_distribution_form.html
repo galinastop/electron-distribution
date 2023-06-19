@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head_fragment.html :: head(title='Результат распределения', description='Результат расчета распределения')}">
+</head>
+
+<body class="container">
+
+<main>
+    <h1>Результат расчета распределения электронов</h1>
+
+    <form th:action="@{/distributions}" action="#" method="post">
+
+        <div class="form-group">
+            <label for="tension-input">Напряженность поля</label>
+            <input value="3000" min="-3000" max="3000" name="tension" step=any type="number" class="form-control"
+                   id="tension-input" required>
+        </div>
+
+        <div class="form-group">
+            <label for="generatorFrequency-input">Частота генератора</label>
+            <input value="1.76" name="generatorFrequency" step=any type="number" class="form-control"
+                   id="generatorFrequency-input" required>
+        </div>
+
+        <div class="form-group">
+            <label for="collisionFrequency-input">Частота соударений</label>
+            <input value="100000000" name="collisionFrequency" step=any type="number" class="form-control"
+                   id="collisionFrequency-input" required>
+        </div>
+
+        <div class="form-group">
+            <label for="maxVelocity-input">Максимальная скорость в м/с</label>
+            <input value="1000000" name="maxVelocity" step=any type="number" class="form-control" id="maxVelocity-input"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label for="numBins-input">Количество интервалов скоростей</label>
+            <input value="100" name="numBins" type="number" class="form-control" id="numBins-input" required>
+        </div>
+
+        <div class="form-group">
+            <label for="radius-input">Радиус разрядной камеры</label>
+            <input value="0.012" name="radius" type="number" class="form-control" id="radius-input" required>
+        </div>
+
+        <div class="form-group">
+            <label for="radiusBins-input">Количество интервалов радиуса</label>
+            <input value="10" name="radiusBins" type="number" class="form-control" id="radiusBins-input" required>
+        </div>
+
+        <hr class="my-4">
+
+        <button class="btn btn-primary btn-lg" type="submit">Рассчитать</button>
+
+    </form>
+
+</main>
+</body>
+</html>
